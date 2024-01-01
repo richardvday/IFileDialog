@@ -1,0 +1,54 @@
+Sample usage. taken from a working app, 
+
+Renoved error handling code for brevity
+BITSET just does what it says. 
+
+class CMyDialogEventsClass : public MsiFileDialogEvents
+{
+public:
+	CMyDialogEventsClass() { }
+	IFACEMETHODIMP OnFileOk(IFileDialog *pfd) {
+		CComPtr<IShellItem> psi;
+		HRESULT hr = pfd->GetResult(&psi);
+		if (FAILED(hr)) {
+   
+		else {
+			CComHeapPtr<WCHAR> pszName;
+			hr = psi->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING, &pszName);
+			if (FAILED(hr)) {
+   
+			else {
+         ///  Do something with it here
+						return S_OK;//  to accept the current result in the dialog 
+				}
+			}
+		}
+		return S_FALSE;
+	}
+};
+
+// error reporting is done in the helper class
+// the error checking and tracing messages etc are still there just in a different place
+bool MyFileDialog_Folder(std::wstring &FolderName) {
+	try {
+		MsiFileDialogEventsNotify fdlg( new CMyDialogEventsClass);//overides OnFileOk see above
+		DWORD dwOptions;
+		fdlg.Create();
+		fdlg.GetOptions(&dwOptions);
+		BITSET(dwOptions, FOS_PICKFOLDERS);
+		fdlg.SetTitle(L"Choose install directory IE \"C:\\Games\\Bethesda Softworks\\Daggerfall\" for example. For best results use the left Panel");
+		fdlg.SetOptions(dwOptions);
+		if (SUCCEEDED(fdlg.Show(NULL))) {
+			CComPtr<IShellItem> psi; // no release needed
+			if (SUCCEEDED(fdlg.GetResult(&psi))) {
+				CComHeapPtr<WCHAR> pszName;// no release needed
+				psi->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING, &pszName);
+				FolderName = pszName;
+				return true;
+			}
+		}
+	}
+	catch (std::exception) {
+	}
+	return false;
+}
