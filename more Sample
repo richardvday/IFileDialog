@@ -1,0 +1,21 @@
+// more sample code 
+// Called when the user changes the selection in the dialog's view.
+IFACEMETHODIMP dfbu_DialogEvents::OnSelectionChange(IFileDialog * pfd )
+{
+	CComPtr<IShellItem> psi;
+	HRESULT hr = pfd->GetCurrentSelection(&psi);
+	if(FAILED(hr ))	{
+        PostError(L"OnFileOk GetCurrentSelection() failed"); }
+	else {
+		CComHeapPtr<WCHAR> pszName;		
+		hr = psi->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING, &pszName);
+		if (FAILED(hr))	{
+        PostError(L"OnFileOk GetDisplayName() failed"); }
+		else {
+        // do your checks here
+				return S_OK;//  to accept the current result in the dialog 
+			}
+		}
+	}
+	return S_FALSE; // to refuse the selection
+}
